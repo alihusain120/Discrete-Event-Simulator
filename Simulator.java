@@ -9,7 +9,7 @@ public class Simulator {
   public void addMonitoredResource(EventGenerator resource){
     this.resources.add(resource);
   }
-
+  //a change was made here
   private void addMonitor(){
 
     Double monRate = Double.POSITIVE_INFINITY;
