@@ -31,8 +31,8 @@ public class Processor extends EventGenerator {
 
   @Override
   public void receiveRequest(Event evt){
-    super.receiveRequest(evt);
     Request curRequest = evt.getRequest();
+
     startService(evt, curRequest);
   }
 
@@ -41,7 +41,8 @@ public class Processor extends EventGenerator {
     Request curRequest = evt.getRequest();
     curRequest.recordDeparture(evt.getTimestamp());
     busyTime += curRequest.getDeparture() - curRequest.getServiceStart();
-    homeServer.setCumulTq(homeServer.getCumulTq() + curRequest.getDeparture() - curRequest.getArrival());
+    homeServer.incCumulTq(curRequest.getDeparture() - curRequest.getArrival());
+
     this.cumulTq += curRequest.getDeparture() - curRequest.getArrival();
     homeServer.incrementServedReq();
     this.numServed++;
@@ -57,7 +58,6 @@ public class Processor extends EventGenerator {
 
     Request nextRequest = homeServer.giveNext();
     if (nextRequest != null){
-      nextRequest.moveTo(this);
       startService(evt, nextRequest);
     }
   }
@@ -71,7 +71,6 @@ public class Processor extends EventGenerator {
   }
 
   public double getUTIL(double time){
-    //System.out.println("PRINTING UTIL OF " + this + " busyTime=" + busyTime + " time= " + time);
     return this.busyTime / time;
 
   }

@@ -18,30 +18,30 @@ public class MMNServer extends SimpleServer {
     req.moveTo(this);
 
     req.recordArrival(evt.getTimestamp());
-
     if (theQueue.isEmpty()){
-      Processor p = getFreeProcessor();
+      Processor p = getFreeProcessor(evt.getTimestamp());
       if (p != null){
-        //req.setMmnProcessorBelongsTo(p);
         p.receiveRequest(evt);
       } else {
         theQueue.add(req);
       }
+    } else{
+      theQueue.add(req);
     }
   }
 
 
   public Request giveNext(){
-    try {
+    if (!theQueue.isEmpty()){
       return theQueue.removeFirst();
-    } catch (NoSuchElementException e){
+    } else {
       return null;
     }
 
   }
 
-  public Processor getFreeProcessor(){
-    if (processors.get(0).isFree() & processors.get(1).isFree()){ //if both free choose randomly
+  public Processor getFreeProcessor(double time){
+    if (processors.get(0).isFree() && processors.get(1).isFree()){ //if both free choose randomly
       double rand = Math.random();
       if (rand <= .5){
         return processors.get(0);
@@ -75,13 +75,13 @@ public class MMNServer extends SimpleServer {
     super.routeTo(next, prob);
   }
 
+  public void incCumulTq(double value){
+    this.cumulTq += value;
+  }
+
   @Override
   public double getTRESP(){
-    double tresp = 0.0;
-    for (Processor p : processors){
-      tresp += p.getTRESP();
-    }
-    return tresp / processors.size();
+    return this.cumulTq / this.servedReqs;
   }
 
   @Override

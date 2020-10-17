@@ -51,7 +51,6 @@ public class Simulator {
       eventFrom.processEvent(evt);
     }
 
-    //Print stats - #TOODODODODO this is server specific, make it so
     double TRESP = 0.0;
     double QTOT = 0.0;
     int totalSnapCount = 0;
@@ -63,8 +62,8 @@ public class Simulator {
 
     //TRESP = QTOT / lambda;
     TRESP = timeline.getSumTimesInSystem() / timeline.getCompletedRequests();
-    System.out.println("TRESP: " + TRESP);
     System.out.println("QTOT: " + QTOT);
+    System.out.println("TRESP: " + TRESP);
 
   }
 
