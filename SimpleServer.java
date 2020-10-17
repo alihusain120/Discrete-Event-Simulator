@@ -5,22 +5,11 @@ public class SimpleServer extends EventGenerator{
   protected LinkedList<Request> theQueue = new LinkedList<Request>();
   protected Double servTime;
   protected String name;
-
-  public Double getCumulQ() {
-    return cumulQ;
-  }
-
   protected Double cumulQ = new Double(0);
   protected Double cumulW = new Double(0);
-
   protected Double cumulTq = new Double(0);
   protected Double cumulTw = new Double(0);
   protected Double busyTime = new Double(0);
-
-  public int getSnapCount() {
-    return snapCount;
-  }
-
   protected int snapCount = 0;
   protected int servedReqs = 0;
 
@@ -71,7 +60,7 @@ public class SimpleServer extends EventGenerator{
     cumulTq += curRequest.getDeparture() - curRequest.getArrival();
     servedReqs++;
 
-    EventGenerator next = super.getNext();
+    EventGenerator next = getNext();
     if (next.getClass() != Sink.class){
       //RX FROM S0 TO S2
       System.out.println(evt.getRequest() + " FROM " + this.name + " TO " + next + ": " + evt.getTimestamp());
@@ -123,6 +112,14 @@ public class SimpleServer extends EventGenerator{
 
   public void setCumulTq(Double cumulTq) {
     this.cumulTq = cumulTq;
+  }
+
+  public int getSnapCount() {
+    return snapCount;
+  }
+
+  public Double getCumulQ() {
+    return cumulQ;
   }
 
   public double getUTIL(Double time){

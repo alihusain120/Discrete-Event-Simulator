@@ -6,6 +6,7 @@ public class Request {
   private int id;
   private static int unique_ID = 0;
   private HashMap<EventGenerator, Stats> stats = new HashMap<EventGenerator, Stats>();
+  private Processor mmnProcessorBelongsTo = null;
 
   public Request (EventGenerator created_at){
     this.at = created_at;
@@ -72,5 +73,14 @@ public class Request {
     return curStats.totalRuns;
   }
 
+  //MMN Server specific functions:
+  public Processor getMmnProcessorBelongsTo() {
+    return mmnProcessorBelongsTo;
+  }
+
+  public void setMmnProcessorBelongsTo(Processor mmnProcessorBelongsTo) {
+    this.mmnProcessorBelongsTo = mmnProcessorBelongsTo;
+  }
+  //End MMn SErver specific functions
 
 }
