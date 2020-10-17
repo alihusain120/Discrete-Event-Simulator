@@ -4,9 +4,9 @@ public class Monitor extends EventGenerator{
 
   private Double rate;
   private Simulator sim;
-  private LinkedList<EventGenerator> resources;
+  private LinkedList<SimpleServer> resources;
 
-  public Monitor(Timeline timeline, Double lambda, LinkedList<EventGenerator> resources){
+  public Monitor(Timeline timeline, Double lambda, LinkedList<SimpleServer> resources){
     super(timeline);
     this.rate = lambda;
     this.resources = resources;

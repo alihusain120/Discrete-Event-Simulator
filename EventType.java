@@ -1,5 +1,6 @@
 public enum EventType {
   BIRTH,
   DEATH,
-  MONITOR
+  MONITOR,
+  DROP
 }

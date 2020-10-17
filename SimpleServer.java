@@ -2,37 +2,44 @@ import java.util.LinkedList;
 
 public class SimpleServer extends EventGenerator{
 
-  private LinkedList<Request> theQueue = new LinkedList<Request>();
-  private Double servTime;
-  private String name;
+  protected LinkedList<Request> theQueue = new LinkedList<Request>();
+  protected Double servTime;
+  protected String name;
 
-  private double probExit;
+  public Double getCumulQ() {
+    return cumulQ;
+  }
 
-  private Double cumulQ = new Double(0);
-  private Double cumulW = new Double(0);
-  private Double cumulTq = new Double(0);
-  private Double cumulTw = new Double(0);
-  private Double busyTime = new Double(0);
-  private int snapCount = 0;
-  private int servedReqs = 0;
+  protected Double cumulQ = new Double(0);
+  protected Double cumulW = new Double(0);
 
-  public SimpleServer(Timeline timeline, Double servTime, String name, double probExit){
+  protected Double cumulTq = new Double(0);
+  protected Double cumulTw = new Double(0);
+  protected Double busyTime = new Double(0);
+
+  public int getSnapCount() {
+    return snapCount;
+  }
+
+  protected int snapCount = 0;
+  protected int servedReqs = 0;
+
+  public SimpleServer(Timeline timeline, Double servTime, String name){
     super(timeline);
     this.servTime = servTime;
     this.name = name;
-    this.probExit = probExit;
   }
 
-  private void startService(Event evt, Request curRequest){
+  protected void startService(Event evt, Request curRequest){
     Event nextEvent = new Event(EventType.DEATH, curRequest,
         evt.getTimestamp()+Exp.getExp(1/this.servTime), this);
 
     curRequest.recordServiceStart(evt.getTimestamp());
     cumulTw += curRequest.getServiceStart() - curRequest.getArrival();
 
-    System.out.println(curRequest + " START " + this.name + ": " + evt.getTimestamp());
+    System.out.println(curRequest + " START " + this + ": " + evt.getTimestamp());
 
-    super.timeline.addEvent(nextEvent);
+    timeline.addEvent(nextEvent);
   }
 
   @Override
@@ -56,7 +63,6 @@ public class SimpleServer extends EventGenerator{
     Request curRequest = evt.getRequest();
 
     Request queueHead = theQueue.removeFirst();
-
     assert curRequest == queueHead;
 
     curRequest.recordDeparture(evt.getTimestamp());
@@ -65,16 +71,12 @@ public class SimpleServer extends EventGenerator{
     cumulTq += curRequest.getDeparture() - curRequest.getArrival();
     servedReqs++;
 
-    assert super.next != null;
-
-    double doesExit = Math.random();
-    if (doesExit <= probExit){ //send to sink
-      timeline.getSink().receiveRequest(evt);
-    } else {
-      System.out.println(evt.getRequest() + " NEXT " + super.next + ": " + evt.getTimestamp());
-      super.next.receiveRequest(evt);
+    EventGenerator next = super.getNext();
+    if (next.getClass() != Sink.class){
+      //RX FROM S0 TO S2
+      System.out.println(evt.getRequest() + " FROM " + this.name + " TO " + next + ": " + evt.getTimestamp());
     }
-
+    next.receiveRequest(evt);
 
     if(!theQueue.isEmpty()){
       Request nextRequest = theQueue.peekFirst();
@@ -82,16 +84,18 @@ public class SimpleServer extends EventGenerator{
     }
   }
 
-  @Override
   public int getServedReqs(){
     return this.servedReqs;
   }
-  @Override
+
+  public void incrementServedReq() {
+    this.servedReqs++;
+  }
+
   public double getCumulTw(){
     return this.cumulTw;
   }
 
-  @Override
   public double getCumulTq(){
     return this.cumulTq;
   }
@@ -101,42 +105,48 @@ public class SimpleServer extends EventGenerator{
     return 1/this.servTime;
   }
 
-  @Override
   public void executeSnapshot(){
     snapCount++;
     cumulQ += theQueue.size();
     cumulW += Math.max(theQueue.size()-1, 0);
   }
 
-  @Override
   public void printStats(Double time){
-    System.out.println("UTIL: " + busyTime/time);
-    System.out.println("QLEN: " + cumulQ/snapCount);
-    System.out.println("TRESP: " + cumulTq/servedReqs);
+    System.out.println(this + " UTIL: " + this.getUTIL(time));
+    System.out.println(this + " QLEN: " + this.getQLEN());
+    System.out.println(this + " TRESP: " + this.getTRESP());
   }
 
-  @Override
+  public String getName(){
+    return this.name;
+  }
+
+  public void setCumulTq(Double cumulTq) {
+    this.cumulTq = cumulTq;
+  }
+
   public double getUTIL(Double time){
     return this.busyTime/time;
   }
 
-  @Override
   public double getQLEN(){
     return this.cumulQ/snapCount;
   }
 
-  @Override
   public double getTRESP(){
     return this.cumulTq/this.servedReqs;
   }
 
-  @Override
   public double getTWAIT(){
     return this.cumulTw/this.servedReqs;
   }
 
-  @Override
   public String toString(){
     return this.name;
+  }
+
+  @Override
+  public EventGenerator getNext(){
+    return super.getNext();
   }
 }

@@ -27,8 +27,7 @@ public class Source extends EventGenerator{
 
     super.timeline.addEvent(nextEvent);
 
-    assert super.next != null;
-    super.next.receiveRequest(evt);
+    super.getNext().receiveRequest(evt);
   }
 
   @Override
