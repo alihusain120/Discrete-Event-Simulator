@@ -9,9 +9,9 @@ public class MG1Server extends SimpleServer {
   public MG1Server(Timeline timeline, double t1, double p1, double t2, double p2,
       double t3, double p3, String name){
     super(timeline, Math.min(Math.min(t1, t2), t3), name);
-    this.uniformServTimes.put(t1, totalProb+=p1);
-    this.uniformServTimes.put(t2, totalProb+=p2);
-    this.uniformServTimes.put(t3, totalProb+=p3);
+    this.uniformServTimes.put(totalProb+=p1, t1);
+    this.uniformServTimes.put(totalProb+=p2, t2);
+    this.uniformServTimes.put(totalProb+=p3, t3);
     this.name = name;
   }
 

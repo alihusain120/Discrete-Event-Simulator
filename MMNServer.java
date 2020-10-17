@@ -1,97 +1,92 @@
 import java.util.LinkedList;
+import java.util.NoSuchElementException;
 
-public class MMNServer extends SimpleServer{
+public class MMNServer extends SimpleServer {
 
-  private int numProcessors;
   private LinkedList<Processor> processors = new LinkedList<>();
-
   public MMNServer(Timeline timeline, Double servTime, String name, int numProcessors){
     super(timeline, servTime, name);
-    this.numProcessors = numProcessors;
     for (int i = 1; i <= numProcessors; i++){
-      processors.add(new Processor(this.name+","+i, this));
+      processors.add(new Processor(timeline, this.name+","+i, servTime, this));
     }
   }
 
-  @Override
-  protected void startService(Event evt, Request curRequest){
-    double nextTime = Exp.getExp(1/this.servTime);
-    Event nextEvent = new Event(EventType.DEATH, curRequest,
-        evt.getTimestamp()+nextTime, this);
-
-    curRequest.recordServiceStart(evt.getTimestamp());
-    cumulTw += curRequest.getServiceStart() - curRequest.getArrival();
-
-    System.out.println(curRequest + " START " +
-        curRequest.getMmnProcessorBelongsTo() + ": " + evt.getTimestamp());
-
-    curRequest.getMmnProcessorBelongsTo().addNextFreeTime(nextTime);
-
-    timeline.addEvent(nextEvent);
-  }
 
   @Override
-  public void receiveRequest(Event evt) {
-    Request curRequest = evt.getRequest();
-    curRequest.moveTo(this);
+  public void receiveRequest(Event evt){
+    Request req = evt.getRequest();
+    req.moveTo(this);
 
-    curRequest.recordArrival(evt.getTimestamp());
-    if(theQueue.size() < 2){
-      Processor p = getFreeProcessor(curRequest.getArrival());
+    req.recordArrival(evt.getTimestamp());
+
+    if (theQueue.isEmpty()){
+      Processor p = getFreeProcessor();
       if (p != null){
-        curRequest.setMmnProcessorBelongsTo(p);
-        startService(evt, curRequest);
+        //req.setMmnProcessorBelongsTo(p);
+        p.receiveRequest(evt);
+      } else {
+        theQueue.add(req);
       }
     }
-    theQueue.add(curRequest);
+  }
+
+
+  public Request giveNext(){
+    try {
+      return theQueue.removeFirst();
+    } catch (NoSuchElementException e){
+      return null;
+    }
+
+  }
+
+  public Processor getFreeProcessor(){
+    if (processors.get(0).isFree() & processors.get(1).isFree()){ //if both free choose randomly
+      double rand = Math.random();
+      if (rand <= .5){
+        return processors.get(0);
+      } else {
+        return processors.get(1);
+      }
+    } else if (processors.get(0).isFree()){
+      return processors.get(0);
+    } else if (processors.get(1).isFree()){
+      return processors.get(1);
+    } else {
+      return null;
+    }
   }
 
   @Override
-  public void releaseRequest(Event evt){
-
-    Request curRequest = evt.getRequest();
-    Request queueHead = theQueue.removeFirst();
-    assert (curRequest == queueHead);
-    curRequest.recordDeparture(evt.getTimestamp());
-
-    busyTime += curRequest.getDeparture() - curRequest.getServiceStart();
-    curRequest.getMmnProcessorBelongsTo().addBusyTime(curRequest.getDeparture() - curRequest.getServiceStart());
-    cumulTq += curRequest.getDeparture() - curRequest.getArrival();
-    servedReqs++;
-
-    EventGenerator next = super.getNext();
-    if (next.getClass() != Sink.class){
-      //RX FROM S0 TO S2
-      System.out.println(evt.getRequest() + " FROM " + this + " TO " + next + ": " + evt.getTimestamp());
+  public void executeSnapshot(){
+    snapCount++;
+    cumulQ += theQueue.size();
+    for (Processor p : processors){
+      cumulQ += (p.isFree() ? 0.0:1.0);
     }
-    next.receiveRequest(evt);
-
-    if(theQueue.size() >= 2){
-      Request nextRequest = theQueue.peekFirst();
-      Processor p = getFreeProcessor(nextRequest.getArrival());
-      if (p!= null){
-        nextRequest.setMmnProcessorBelongsTo(p);
-        startService(evt, nextRequest);
-      }
-    }
+    cumulW += Math.max(theQueue.size()-1, 0);
   }
 
-  private Processor getFreeProcessor(double arrTime){
-    double lowestNextFreeTime = 0.0;
-    Processor toReturn =null;
+  @Override
+  public void routeTo(EventGenerator next, Double prob){
     for (Processor p : processors){
-      if (p.getNextFreeTime() <= lowestNextFreeTime){
-        lowestNextFreeTime = p.getNextFreeTime();
-        toReturn = p;
-      }
-      /*
-      if (arrTime >= p.getNextFreeTime()){
-        System.out.println("ASSIGNING TO " + p + " ArrTime=" + arrTime + " nextFreeTime= "+ p.getNextFreeTime());
-        return p;
-      }
-       */
+      p.routeTo(next, prob);
     }
-    return toReturn;
+    super.routeTo(next, prob);
+  }
+
+  @Override
+  public double getTRESP(){
+    double tresp = 0.0;
+    for (Processor p : processors){
+      tresp += p.getTRESP();
+    }
+    return tresp / processors.size();
+  }
+
+  @Override
+  public double getQLEN(){
+    return this.cumulQ/snapCount;
   }
 
   @Override

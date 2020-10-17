@@ -20,8 +20,10 @@ public class MM1KServer extends SimpleServer {
     } else if (this.theQueue.size() == this.queueLength){
       ++numDropped;
       super.timeline.addEvent(new Event(EventType.DROP, curRequest, evt.getTimestamp(), this));
+      return;
     }
 
+    //this should be in an else
     this.theQueue.add(curRequest);
 
   }

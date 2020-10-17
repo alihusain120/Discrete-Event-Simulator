@@ -73,12 +73,18 @@ public class SimpleServer extends EventGenerator{
     }
   }
 
-  public int getServedReqs(){
-    return this.servedReqs;
+  public void executeSnapshot(){
+    snapCount++;
+    cumulQ += theQueue.size();
+    cumulW += Math.max(theQueue.size()-1, 0);
   }
 
   public void incrementServedReq() {
     this.servedReqs++;
+  }
+
+  public int getServedReqs(){
+    return this.servedReqs;
   }
 
   public double getCumulTw(){
@@ -92,18 +98,6 @@ public class SimpleServer extends EventGenerator{
   @Override
   Double getRate(){
     return 1/this.servTime;
-  }
-
-  public void executeSnapshot(){
-    snapCount++;
-    cumulQ += theQueue.size();
-    cumulW += Math.max(theQueue.size()-1, 0);
-  }
-
-  public void printStats(Double time){
-    System.out.println(this + " UTIL: " + this.getUTIL(time));
-    System.out.println(this + " QLEN: " + this.getQLEN());
-    System.out.println(this + " TRESP: " + this.getTRESP());
   }
 
   public String getName(){
@@ -142,8 +136,15 @@ public class SimpleServer extends EventGenerator{
     return this.name;
   }
 
+  public void printStats(Double time){
+    System.out.println(this + " UTIL: " + this.getUTIL(time));
+    System.out.println(this + " QLEN: " + this.getQLEN());
+    System.out.println(this + " TRESP: " + this.getTRESP());
+  }
+
   @Override
   public EventGenerator getNext(){
     return super.getNext();
   }
+
 }

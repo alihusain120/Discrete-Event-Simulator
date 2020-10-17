@@ -1,12 +1,13 @@
 import java.util.HashMap;
 
-public class Request {
+public class Request implements Comparable<Request>{
   private EventGenerator at;
   private EventGenerator last;
   private int id;
   private static int unique_ID = 0;
   private HashMap<EventGenerator, Stats> stats = new HashMap<EventGenerator, Stats>();
   private Processor mmnProcessorBelongsTo = null;
+  private double entryTime;
 
   public Request (EventGenerator created_at){
     this.at = created_at;
@@ -71,6 +72,19 @@ public class Request {
   public Double getTotalRuns(){
     Stats curStats = this.stats.get(this.at);
     return curStats.totalRuns;
+  }
+
+  public void setEntryTime(double time){
+    this.entryTime = time;
+  }
+
+  public double getEntryTime(){
+    return this.entryTime;
+  }
+
+  @Override
+  public int compareTo(Request req){
+    return this.getArrival().compareTo(req.getArrival());
   }
 
   //MMN Server specific functions:

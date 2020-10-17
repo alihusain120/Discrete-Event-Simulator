@@ -9,6 +9,7 @@ public class Source extends EventGenerator{
     this.rate = lambda;
 
     Request firstRequest = new Request(this);
+    firstRequest.setEntryTime(0);
     Event firstEvent = new Event(EventType.BIRTH, firstRequest, new Double(0), this);
 
     super.timeline.addEvent(firstEvent);
@@ -23,7 +24,8 @@ public class Source extends EventGenerator{
     Event nextEvent = new Event(EventType.BIRTH, nextReq,
         evt.getTimestamp()+Exp.getExp(this.rate), this);
 
-    System.out.println(evt.getRequest() + " ARR: " + evt.getTimestamp());
+    System.out.println(curRequest + " ARR: " + evt.getTimestamp());
+    curRequest.setEntryTime(evt.getTimestamp());
 
     super.timeline.addEvent(nextEvent);
 

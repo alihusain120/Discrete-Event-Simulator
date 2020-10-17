@@ -6,8 +6,22 @@ public class Simulator {
   private Timeline timeline = new Timeline();
   private Double now;
 
+  public double getLambda() {
+    return lambda;
+  }
+
+  public void setLambda(double lambda) {
+    this.lambda = lambda;
+  }
+
+  private double lambda;
+
   public void addMonitoredResource(SimpleServer resource){
     this.resources.add(resource);
+  }
+
+  public Timeline getTimeline(){
+    return this.timeline;
   }
 
   private void addMonitor(){
@@ -43,15 +57,15 @@ public class Simulator {
     int totalSnapCount = 0;
     for (SimpleServer resource : resources){
       resource.printStats(simTime);
-      TRESP += resource.getCumulTq();
-      QTOT += resource.getCumulQ();
+      QTOT += resource.getCumulQ() / resource.getSnapCount();
       totalSnapCount += resource.getSnapCount();
     }
 
-    TRESP /= timeline.getCompletedRequests();
-    QTOT /= totalSnapCount;
+    //TRESP = QTOT / lambda;
+    TRESP = timeline.getSumTimesInSystem() / timeline.getCompletedRequests();
     System.out.println("TRESP: " + TRESP);
     System.out.println("QTOT: " + QTOT);
+
   }
 
   public static void main (String[] args){
@@ -75,7 +89,7 @@ public class Simulator {
     double probS3toS2 = Double.valueOf(args[16]);
 
     Simulator sim = new Simulator();
-
+    sim.setLambda(lambda);
     Source trafficSource = new Source(sim.timeline, lambda);
 
     Sink trafficSink = new Sink(sim.timeline);

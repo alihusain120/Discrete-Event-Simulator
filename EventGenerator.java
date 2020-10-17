@@ -20,7 +20,6 @@ public class EventGenerator {
   }
 
   public void routeTo(EventGenerator next, Double prob){
-
     this.nextRoutes.put(totalProb += prob, next);
 
   }

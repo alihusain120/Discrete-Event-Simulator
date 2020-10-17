@@ -3,6 +3,7 @@ import java.util.PriorityQueue;
 public class Timeline {
   private PriorityQueue<Event> timeline = new PriorityQueue<Event>();
   private int completedRequests = 0;
+  private double sumTimesInSystem = 0.0;
   private Sink endSink;
 
   public void addEvent(Event evt){
@@ -20,6 +21,14 @@ public class Timeline {
   public void addCompletedRequest(){
     this.completedRequests++;
     return;
+  }
+
+  public void incrementSumTimesInSystem(double time){
+    this.sumTimesInSystem += time;
+  }
+
+  public double getSumTimesInSystem() {
+    return sumTimesInSystem;
   }
 
   public void setEndSink(Sink endSink){
