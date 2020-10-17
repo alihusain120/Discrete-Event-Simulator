@@ -141,7 +141,6 @@ public class SimpleServer extends EventGenerator{
   public String toString(){
     return this.name;
   }
-
   @Override
   public EventGenerator getNext(){
     return super.getNext();
